@@ -1,0 +1,172 @@
+title: $:/plugins/OokTech/DynamicTables/ColumnTables
+tags: $:/tags/Macro
+
+\define ColumnTable(filter fields titleLinks)
+<$set
+  name=ColumnList value='$filter$'
+>
+  <$set
+    name=FieldsUsed value='$fields$'
+  >
+    <$set name=TitleLinks value='$titleLinks$'
+
+      <<TableMacrosInnerColumnTable>>
+
+    </$set>
+  </$set>
+</$set>
+\end
+
+\define TableMacrosMakeTableSortState()
+{{$:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$}}
+\end
+
+\define TableMacrosMakeTableSortStateTiddler()
+$:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$
+\end
+
+\define TableMacrosInlineEditButton()
+<$reveal
+  type='nomatch'
+  state="""$:/temp/edit/$(ThisTiddler)$/$(ThisField)$"""
+  text='edit'
+>
+  <$button
+    set="""$:/temp/edit/$(ThisTiddler)$/$(ThisField)$"""
+    setTo=edit
+    class='tc-btn-invisible'
+    style='width:100%;hegiht:100%'
+  >
+    <$view
+      tiddler=<<ThisTiddler>>
+      field=<<ThisField>>
+    >
+      --
+    </$view>
+  </$button>
+</$reveal>
+<$reveal
+  type='match'
+  state="""$:/temp/edit/$(ThisTiddler)$/$(ThisField)$"""
+  text='edit'
+>
+  <$button
+    set="""$:/temp/edit/$(ThisTiddler)$/$(ThisField)$"""
+    setTo=noedit
+  >
+    {{$:/core/images/done-button}}
+  </$button>
+  <$edit-text
+    tiddler=<<ThisTiddler>>
+    field=<<ThisField>>
+    size=1
+  />
+</$reveal>
+\end
+
+\define TableMacrosInnerColumnTable()
+<$set
+  name=FieldsList1
+  filter='$(ColumnList)$+[fields[]]-[[text]]-[[title]]-[[modified]]-[[created]]-[[tags]]'
+>
+  <$set
+    name=FieldsList
+    filter='[is[system]!is[system]]$(FieldsUsed)$'
+    emptyValue=<<FieldsList1>>
+  >
+    <$set
+      name=RowOrColumn
+      value=Column
+    >
+      <$set
+        name=TableSortState
+        value=<<TableMacrosMakeTableSortState>>
+      >
+        <table>
+          <<TableMacrosColumnInnerInnerRows>>
+        </table>
+      </$set>
+    </$set>
+  </$set>
+</$set>
+\end
+
+\define TableMacrosColumnInnerInnerRows()
+<tr>
+  <th>
+  </th>
+  <$list
+    filter='$(ColumnList)$+[sort{$(TableMacrosMakeTableSortStateTiddler)$}]'
+  >
+    <th>
+      <$list
+        filter='[[$(TitleLinks)$]prefix[true]]'
+        value=dummy
+        emptyMessage=<<currentTiddler>>
+      >
+        <$link>
+          <<currentTiddler>>
+        </$link>
+      </$list>
+    </th>
+  </$list>
+</tr>
+<$list
+  filter=<<FieldsList>>
+  variable=ThisField
+>
+  <tr>
+    <th>
+      <$button
+        class='tc-btn-invisible'
+        set=<<TableMacrosMakeTableSortStateTiddler>>
+        setTo=<<ThisField>>
+      >
+        <<ThisField>>
+      </$button>
+    </th>
+    <$list
+      filter='$(ColumnList)$+[sort{$(TableMacrosMakeTableSortStateTiddler)$}]'
+      variable=ThisTiddler
+    >
+      <td>
+        <<TableMacrosInlineEditButton>>
+      </td>
+    </$list>
+  </tr>
+</$list>
+\end
+
+!Simple Column Tables
+
+Column table:
+
+```
+<<ColumnTable "row tiddler filter" "field filter" titleLinks>>
+```
+
+|!Parameter |!Description |
+|`filter` |A filter that defines which tiddlers are used to make the table rows |
+|`fields` |A filter that defines which fields are listed to make the table columns |
+|`titleLinks` |If this is set to `true` than the tiddler title in the row headers are links. (Default: `false`) |
+
+The `ColumnTable` macro takes a filter listing tiddlers as input, with an
+optional second filter listing fields.
+
+The tiddler filter defines which tiddlers are the columns for the
+`ColumnTable`.
+
+If the second filter is left out the rows for the`ColumnTable` macro are
+defined by the fields in the returned tiddlers. Otherwise the second filter
+defines the rows used. Each row is a field, if a tiddler doesn't have the
+field listed than `--` is displayed.
+
+Clicking on a table cell lets you edit that field for the tiddler.
+
+If titleLinks is true than the tiddler name in the row header is a link to the
+tiddler.
+
+You can click on a row header and sort the table by that row. Unfortunately
+sorting row tables by the row or column tables by the columns is
+probably going to take some javascript that I don't feel like dealing with
+right now. It requires sorting the fields of a tiddler by their contents.

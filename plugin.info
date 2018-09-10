@@ -1,0 +1,10 @@
+{
+	"title": "$:/plugins/OokTech/DynamicTables",
+	"description": "A plugin to add a dynamic tables macros",
+	"author": "inmysocks",
+	"version": "0.0.2",
+	"core-version": ">=5.1.9",
+	"source": "",
+	"plugin-type": "plugin",
+  "list": "readme RowTables ColumnTables TableWizard"
+}

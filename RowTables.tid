@@ -1,0 +1,184 @@
+title: $:/plugins/OokTech/DynamicTables/RowTables
+tags: $:/tags/Macro
+
+\define RowTable(filter fields titleLinks)
+<$set
+  name='RowList'
+  value='$filter$'
+>
+  <$set
+    name='FieldsUsed'
+    value='$fields$'
+  >
+    <$set
+      name='TitleLinks'
+      value='$titleLinks$'
+    >
+
+      <<TableMacrosInnerRowTable>>
+
+      </$set>
+  </$set>
+</$set>
+\end
+
+\define TableMacrosInnerRowTable()
+<$set
+  name=FieldsList1
+  filter='$(RowList)$+[fields[]]-[[text]]-[[title]]-[[modified]]-[[created]]-[[tags]]'
+>
+  <$set
+    name=FieldsList
+    filter='[is[system]!is[system]]$(FieldsUsed)$'
+    emptyValue=<<FieldsList1>>
+  >
+    <$set
+      name=RowOrColumn
+      value=Row
+    >
+      <$set
+        name=TableSortState
+        value=<<TableMacrosMakeTableSortState>>
+      >
+        <table>
+          <tr>
+            <th>
+              <$button
+                class='tc-btn-invisible'
+                style='width:100%;height:100%'
+                set=<<TableMacrosMakeTableSortStateTiddler>>
+                setTo=title
+              >
+                  Title
+              </$button>
+            </th>
+            <$list
+              filter=<<FieldsList>>
+            >
+              <th>
+                <$button
+                  class='tc-btn-invisible'
+                  set=<<TableMacrosMakeTableSortStateTiddler>>
+                  setTo=<<currentTiddler>>
+                >
+                  <<currentTiddler>>
+                </$button>
+              </th>
+            </$list>
+          </tr>
+          <<TableMacrosRowTableInnerInnerRows>>
+        </table>
+      </$set>
+    </$set>
+  </$set>
+</$set>
+\end
+
+\define TableMacrosRowTableInnerInnerRows()
+<$list
+  filter='$(RowList)$+[sort{$(TableMacrosMakeTableSortStateTiddler)$}]'
+  variable=ThisTiddler
+>
+  <tr>
+    <th>
+      <$list
+        filter='[[$(TitleLinks)$]prefix[true]]'
+        value=dummy
+        emptyMessage=<<ThisTiddler>>
+      >
+        <$link>
+          <<ThisTiddler>>
+        </$link>
+      </$list>
+    </th>
+    <$list
+      filter=<<FieldsList>>
+      variable=ThisField
+    >
+      <td>
+        <<TableMacrosInlineEditButton>>
+      </td>
+    </$list>
+  </tr>
+</$list>
+\end
+
+\define TableMacrosMakeTableSortState()
+{{$:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$}}
+\end
+
+\define TableMacrosMakeTableSortStateTiddler()
+$:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$
+\end
+
+\define TableMacrosInlineEditButton()
+<$reveal
+  type='nomatch'
+  state="""$:/temp/edit/$(ThisTiddler)$/$(ThisField)$"""
+  text='edit'
+>
+  <$button
+    set="""$:/temp/edit/$(ThisTiddler)$/$(ThisField)$"""
+    setTo=edit
+    class='tc-btn-invisible'
+    style='width:100%;hegiht:100%'
+  >
+    <$view
+      tiddler=<<ThisTiddler>>
+      field=<<ThisField>>
+    >
+      --
+    </$view>
+  </$button>
+</$reveal>
+<$reveal
+  type='match'
+  state="""$:/temp/edit/$(ThisTiddler)$/$(ThisField)$"""
+  text='edit'
+>
+  <$button
+    set="""$:/temp/edit/$(ThisTiddler)$/$(ThisField)$"""
+    setTo=noedit
+  >
+    {{$:/core/images/done-button}}
+  </$button>
+  <$edit-text
+    tiddler=<<ThisTiddler>>
+    field=<<ThisField>>
+    size=1
+  />
+</$reveal>
+\end
+
+!Simple Row Tables
+
+Row table:
+
+```
+<<RowTable "row tiddler filter" "field filter" titleLinks>>
+```
+
+|!Parameter |!Description |
+|`filter` |A filter that defines which tiddlers are used to make the table columns |
+|`fields` |A filter that defines which fields are listed to make the table rows |
+|`titleLinks` |If this is set to `true` than the tiddler title in the column headers are links. (Default: `false`) |
+
+The `RowTable` takes a filter listing tiddlers as input, with an optional
+second filter listing fields.
+
+The tiddler filter defines which tiddlers are the rows for the `RowTable`.
+
+If the second filter is left out the columns for the`RowTable` macro are
+defined by the fields in the returned tiddlers. Otherwise the second filter
+defines the columns used. Each column is a field, if a tiddler doesn't have the
+field listed than `--` is displayed.
+
+Clicking on a table cell lets you edit that field for the tiddler.
+
+If titleLinks is true than the tiddler name in the row header is a link to the
+tiddler.
+
+You can click on a column header and sort the table by that column.
+Unfortunately sorting column tables by the columns or row tables by the rows is
+probably going to take some javascript that I don't feel like dealing with
+right now. It requires sorting the fields of a tiddler by their contents.
