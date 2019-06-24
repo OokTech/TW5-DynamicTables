@@ -1,1 +1,65 @@
 title: readme.tid
+
+!Simple Dynamically Created Column or Row Tables
+
+Column tables take a filter as input and make one column for each tiddler
+returned by the filter, row tables do the same thing but instead of one column
+per tiddler it is one row per tiddler. The contents of each column/row are
+tiddler fields. Which fields are displayed can be set with a filter.
+
+!! Column table
+
+```
+<<ColumnTable "row tiddler filter" "field filter" titleLinks wikify>>
+```
+
+!!! Example
+
+`<<ColumnTable """[!is[system]limit[5]]""" """tags modified created foo""" false true>>`
+
+
+<<ColumnTable """[!is[system]limit[5]]""" """tags modified created foo""" false true>>
+
+!! Row table
+
+```
+<<RowTable "row tiddler filter" "field filter" titleLinks wikify>>
+```
+
+!!! Example
+
+`<<RowTable """[!is[system]limit[5]]""" """tags modified created foo""" false true>>`
+
+
+<<RowTable """[!is[system]limit[5]]""" """tags modified created foo""" false true>>
+
+|!Parameter |!Description |
+|`filter` |A filter that defines which tiddlers are used to make the table rows/columns |
+|`fields` |A filter that defines which fields are listed to make the table columns/rows |
+|`titleLinks` |If this is set to `true` than the tiddler title in the row headers are links. (Default: `false`) |
+|`wikify` |If this is set to `true` than the cell contents are wikified before being displayed. (Default: `false`) |
+
+The macros take a filter listing tiddlers as input, with an
+optional second filter listing fields.
+
+The tiddler filter defines which tiddlers are the columns/rows for the
+table.
+
+If the second filter is left out the rows/columns for the macro are
+defined by the fields in the returned tiddlers. Otherwise the second filter
+defines the rows used. Each row/column is a field, if a tiddler doesn't have the
+field listed than `--` is displayed.
+
+Clicking on a table cell lets you edit that field for the tiddler.
+
+If titleLinks is true than the tiddler name in the row header is a link to the
+tiddler.
+
+If `wikify` is true than the cell contents are wikified, so title lists and
+other wikitext will display the rendered result, not the raw text.
+
+You can click on a row header (for column tables) or column header (for row
+tables) and sort the table by that row/column. Unfortunately sorting row tables
+by the row or column tables by the columns is probably going to take some
+javascript that I don't feel like dealing with right now. It requires sorting
+the fields of a tiddler by their contents.

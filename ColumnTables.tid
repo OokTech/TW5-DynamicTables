@@ -1,29 +1,22 @@
 title: $:/plugins/OokTech/DynamicTables/ColumnTables
 tags: $:/tags/Macro
 
-\define ColumnTable(filter fields titleLinks)
-<$set
-  name=ColumnList value='$filter$'
+\define ColumnTable(filter fields titleLinks wikify)
+<$vars
+  ColumnList="""$filter$"""
+  FieldsUsed="""$fields$"""
+  TitleLinks="""$titleLinks$"""
+  WikifyContent="""$wikify$"""
 >
-  <$set
-    name=FieldsUsed value='$fields$'
-  >
-    <$set name=TitleLinks value='$titleLinks$'
 
-      <<TableMacrosInnerColumnTable>>
+  <<TableMacrosInnerColumnTable>>
 
-    </$set>
-  </$set>
-</$set>
+</$vars>
 \end
 
-\define TableMacrosMakeTableSortState()
-{{$:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$}}
-\end
+\define TableMacrosMakeTableSortState() {{$:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$}}
 
-\define TableMacrosMakeTableSortStateTiddler()
-$:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$
-\end
+\define TableMacrosMakeTableSortStateTiddler() $:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$
 
 \define TableMacrosInlineEditButton()
 <$reveal
@@ -37,12 +30,23 @@ $:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$
     class='tc-btn-invisible'
     style='width:100%;hegiht:100%'
   >
-    <$view
-      tiddler=<<ThisTiddler>>
-      field=<<ThisField>>
+    <$list
+      filter="""[<WikifyContent>prefix[true]]"""
+      variable=unused
+      emptyMessage="""<$view
+        tiddler=<<ThisTiddler>>
+        field=<<ThisField>>
+      >
+        --
+      </$view>"""
     >
-      --
-    </$view>
+      <$transclude
+        tiddler=<<ThisTiddler>>
+        field=<<ThisField>>
+      >
+        --
+      </$transclude>
+    </$list>
   </$button>
 </$reveal>
 <$reveal
@@ -74,19 +78,14 @@ $:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$
     filter='[is[system]!is[system]]$(FieldsUsed)$'
     emptyValue=<<FieldsList1>>
   >
-    <$set
-      name=RowOrColumn
-      value=Column
+    <$vars
+      RowOrColumn=Column
+      TableSortState=<<TableMacrosMakeTableSortState>>
     >
-      <$set
-        name=TableSortState
-        value=<<TableMacrosMakeTableSortState>>
-      >
-        <table>
-          <<TableMacrosColumnInnerInnerRows>>
-        </table>
-      </$set>
-    </$set>
+      <table>
+        <<TableMacrosColumnInnerInnerRows>>
+      </table>
+    </$vars>
   </$set>
 </$set>
 \end
@@ -101,7 +100,7 @@ $:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$
     <th>
       <$list
         filter='[[$(TitleLinks)$]prefix[true]]'
-        value=dummy
+        variable=unused
         emptyMessage=<<currentTiddler>>
       >
         <$link>
@@ -142,13 +141,14 @@ $:/state/tables/Sort/$(RowOrColumn)$/$(FieldsList)$
 Column table:
 
 ```
-<<ColumnTable "row tiddler filter" "field filter" titleLinks>>
+<<ColumnTable "row tiddler filter" "field filter" titleLinks wikify>>
 ```
 
 |!Parameter |!Description |
 |`filter` |A filter that defines which tiddlers are used to make the table rows |
 |`fields` |A filter that defines which fields are listed to make the table columns |
 |`titleLinks` |If this is set to `true` than the tiddler title in the row headers are links. (Default: `false`) |
+|`wikify` |If this is set to `true` than the cell contents are wikified before being displayed. (Default: `false`) |
 
 The `ColumnTable` macro takes a filter listing tiddlers as input, with an
 optional second filter listing fields.
@@ -165,6 +165,9 @@ Clicking on a table cell lets you edit that field for the tiddler.
 
 If titleLinks is true than the tiddler name in the row header is a link to the
 tiddler.
+
+If `wikify` is true than the cell contents are wikified, so title lists and
+other wikitext will display the rendered result, not the raw text.
 
 You can click on a row header and sort the table by that row. Unfortunately
 sorting row tables by the row or column tables by the columns is
