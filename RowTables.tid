@@ -73,7 +73,7 @@ tags: $:/tags/Macro
         variable=unused
         emptyMessage=<<ThisTiddler>>
       >
-        <$link>
+        <$link to=<<ThisTiddler>>>
           <<ThisTiddler>>
         </$link>
       </$list>
